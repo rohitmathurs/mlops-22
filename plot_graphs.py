@@ -1,15 +1,21 @@
 # Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
 # License: BSD 3 clause
 
+# Ref: https://scikit-image.org/docs/dev/auto_examples/transform/plot_rescale.html
+# Ref: https://stackoverflow.com/questions/48681109/expand-sklearn-digit-size-fom-88-to-3232
 
 #PART: library dependencies -- sklear, torch, tensorflow, numpy, transformers
 
 # Standard scientific Python imports
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Import datasets, classifiers and performance metrics
 from sklearn import datasets, svm, metrics
 from sklearn.model_selection import train_test_split
+
+#Import the image resize transform module
+from skimage.transform import resize
 
 
 # Class exercise:
@@ -25,21 +31,37 @@ train_frac = 0.8
 test_frac = 0.1
 dev_frac = 0.1
 
+#Image size
+WIDTH = 24
+HEIGHT = 24
+
 #PART: load dataset -- data from csv, tsv, jsonl, pickle
 digits = datasets.load_digits()
+image_data = digits.data
+
+# Print the size of the images
+print("\nSize of the images in the original dataset is: ", digits.images.shape[1],"x",digits.images.shape[2])
 
 #PART: sanity check visualization of the data
-_, axes = plt.subplots(nrows=1, ncols=4, figsize=(10, 3))
-for ax, image, label in zip(axes, digits.images, digits.target):
-    ax.set_axis_off()
-    ax.imshow(image, cmap=plt.cm.gray_r, interpolation="nearest")
-    ax.set_title("Training: %i" % label)
+#_, axes = plt.subplots(nrows=1, ncols=4, figsize=(10, 3))
+#for ax, image, label in zip(axes, digits.images, digits.target):
+#    ax.set_axis_off()
+#    ax.imshow(image, cmap=plt.cm.gray_r, interpolation="nearest")
+#    ax.set_title("Training: %i" % label)
 
+# Resize the images
+print("Resizing the images to ", WIDTH, "x", HEIGHT)
+resized_digits = [resize(image_data[i].reshape(8,8),(WIDTH,HEIGHT))for i in range(len(image_data))]
+resized_digits = np.array(resized_digits)
+
+#Sanity check plot of a resized digit
+#plt.imshow(resized_digits[160].reshape((WIDTH,HEIGHT)))
+#plt.show()
 
 #PART: data pre-processing -- to remove some noise, to normalize data, format the data to be consumed by mode
 # flatten the images
-n_samples = len(digits.images)
-data = digits.images.reshape((n_samples, -1))
+n_samples = len(image_data)
+data = resized_digits.reshape((n_samples, -1))
 
 
 #PART: define train/dev/test splits of experiment protocol
