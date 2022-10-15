@@ -1,6 +1,8 @@
 # Import datasets, classifiers and performance metrics
 from sklearn.model_selection import train_test_split
-from sklearn import metrics
+from sklearn import datasets, svm, metrics
+from joblib import dump, load
+
 
 # Dataset preprocessing function
 def preprocess_digits(dataset):
@@ -34,6 +36,7 @@ def param_tuning(clf, gamma_list, c_list, X_train, y_train, X_dev, y_dev, X_test
 	# Variables for storing the current best hyper_parameter combination
 	best_gamma = 0
 	best_c = 0
+	best_model = None
 	for gamma in gamma_list:
 		for C in c_list:				
 			#PART: setting up hyperparameter
@@ -60,4 +63,46 @@ def param_tuning(clf, gamma_list, c_list, X_train, y_train, X_dev, y_dev, X_test
 				max_acc = acc_dev
 				best_gamma = gamma
 				best_c = C
-	return max_acc, best_gamma, best_c
+				best_model = clf
+	return max_acc, best_gamma, best_c, best_model
+	
+def train_save_model(X_train, y_train, X_dev, y_dev, X_test, y_test, gamma_list, c_list, model_path):
+
+	# 2. Train for every combination of hyperparameter values
+	# 2a. Train the model
+	# 2b. Compute the acuracy on the validation set
+	# 3. Identify the best combination of hyperparameters for which validation set performance is maximum
+	# 4. Report the test set accuracy with this best model
+
+	# Variable for storing the accuracy of the current combination
+	acc = 0
+
+	#Variable for storing the current max accuracy
+	max_acc = 0;
+
+	# Variables for storing the current best hyper_parameter combination
+	best_gamma = 0
+	best_c = 0
+	best_model = None
+
+	# Variables for the different accuracies
+	predicted_train = 0
+	predicted_dev = 0
+	predicted_test = 0
+
+	print("\nGamma, C\t", "Train\t", "Dev\t", "Test\t")
+
+	#PART: Define the model
+	# Create a classifier: a support vector classifier
+	clf = svm.SVC()
+
+	max_acc, best_gamma, best_c, best_model = param_tuning(clf, gamma_list, c_list, X_train, y_train, X_dev, y_dev, X_test, y_test)
+
+	# Save the best_model
+	best_param_config = "_".join(["Gamma=" + str(best_gamma) + "_C=" + str(best_c)])
+	if model_path is None:
+		model_path = "svm_" + best_param_config + ".joblib" 
+	dump(best_model, model_path)
+	
+	return model_path, best_param_config, best_gamma, best_c
+	

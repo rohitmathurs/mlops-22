@@ -8,7 +8,8 @@
 from sklearn import datasets, svm, metrics
 
 # Import helper functions
-from utils import preprocess_digits, train_dev_test_split, param_tuning
+from utils import preprocess_digits, train_dev_test_split, param_tuning, train_save_model
+from joblib import dump, load
 
 # Class exercise:
 # 1. Set the ranges of hyper parameters
@@ -19,54 +20,31 @@ train_frac = 0.8
 test_frac = 0.1
 dev_frac = 0.1
 
+model_path = None
+
 #PART: load dataset -- data from csv, tsv, jsonl, pickle
 digits = datasets.load_digits()
+data, image_data = preprocess_digits(digits)
+X_train, y_train, X_dev, y_dev, X_test, y_test = train_dev_test_split(data, image_data, train_frac, dev_frac)
 
 # Print the size of the images
 print("\nSize of the images in the original dataset is: ", digits.images.shape[1],"x",digits.images.shape[2])
 
-data, image_data = preprocess_digits(digits)
-X_train, y_train, X_dev, y_dev, X_test, y_test = train_dev_test_split(data, image_data, train_frac, dev_frac)
+model_path, best_param_config, best_gamma, best_c = train_save_model(X_train, y_train, X_dev, y_dev, X_test, y_test, gamma_list, c_list, model_path)
 
-# 2. Train for every combination of hyperparameter values
-# 2a. Train the model
-# 2b. Compute the acuracy on the validation set
-# 3. Identify the best combination of hyperparameters for which validation set performance is maximum
-# 4. Report the test set accuracy with this best model
-
-# Variable for storing the accuracy of the current combination
-acc = 0
-
-#Variable for storing the current max accuracy
-max_acc = 0;
-
-# Variables for storing the current best hyper_parameter combination
-best_gamma = 0
-best_c = 0
-
-# Variables for the different accuracies
-predicted_train = 0
-predicted_dev = 0
-predicted_test = 0
-
-print("\nGamma, C\t", "Train\t", "Dev\t", "Test\t")
-
-#PART: Define the model
-# Create a classifier: a support vector classifier
-clf = svm.SVC()
-
-max_acc, best_gamma, best_c = param_tuning(clf, gamma_list, c_list, X_train, y_train, X_dev, y_dev, X_test, y_test)
+# Load the best model
+best_model = load(model_path)
 
 #PART: Get test set predictions
 # Predict the value of the digit on the test subset
 
-#PART: setting up hyperparameter
-hyper_params = {'gamma':best_gamma, 'C':best_c}
-clf.set_params(**hyper_params)
+# PART: setting up hyperparameter
+# hyper_params = {'gamma':best_gamma, 'C':best_c}
+# clf.set_params(**hyper_params)
 
-predicted_train = clf.predict(X_train)
-predicted_dev = clf.predict(X_dev)
-predicted_test = clf.predict(X_test)
+predicted_train = best_model.predict(X_train)
+predicted_dev = best_model.predict(X_dev)
+predicted_test = best_model.predict(X_test)
 
 acc_train = metrics.accuracy_score(y_pred=predicted_train, y_true=y_train)
 acc_dev = metrics.accuracy_score(y_pred=predicted_dev, y_true=y_dev)
