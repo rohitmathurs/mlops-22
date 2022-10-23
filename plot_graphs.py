@@ -6,6 +6,8 @@
 
 # Import datasets, classifiers and performance metrics
 from sklearn import datasets, svm, metrics
+from sklearn.metrics import accuracy_score
+import numpy as np
 
 # Import helper functions
 from utils import preprocess_digits, train_dev_test_split, param_tuning, train_save_model
@@ -51,3 +53,4 @@ acc_dev = metrics.accuracy_score(y_pred=predicted_dev, y_true=y_dev)
 acc_test = metrics.accuracy_score(y_pred=predicted_test, y_true=y_test)
 
 print("\n", best_gamma, "," ,best_c, "\t", round(acc_train, 3), "\t", round(acc_dev, 3), "\t", round(acc_test, 3), "Best Combination\n")
+print( np.unique(predicted_test))
