@@ -24,7 +24,7 @@ def train_dev_test_split(data, label, train_frac, dev_frac):
 	    data, label, test_size=dev_test_frac, shuffle=True
 	)
 	X_test, X_dev, y_test, y_dev = train_test_split(
-	    X_dev_test, y_dev_test, test_size=(dev_frac)/dev_test_frac, shuffle=True
+	    X_dev_test, y_dev_test, test_size=dev_frac / dev_test_frac, shuffle=True
 	)
 	return X_train, y_train, X_dev, y_dev, X_test, y_test
 	
