@@ -5,7 +5,7 @@ from joblib import load
 app = Flask(__name__)
 
 #Load one of the saved models
-model_path = "../svm_Gamma=0.01_C=0.5.joblib"
+model_path = "svm_Gamma=0.01_C=0.5.joblib"
 model = load(model_path)
 	
 @app.route("/predict", methods=['POST'])
@@ -24,3 +24,6 @@ def predict_digit():
 		return '\nInput images are the same digit\n\n'
 	else:
 		return '\nInput images are not the same digit\n\n'
+		
+if __name__ == "__main__":
+    app.run(debug=True)
