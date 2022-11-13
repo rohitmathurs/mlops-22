@@ -1,6 +1,6 @@
 # Import datasets, classifiers and performance metrics
 from sklearn.model_selection import train_test_split
-from sklearn import datasets, svm, metrics
+from sklearn import datasets, svm, metrics, tree
 from joblib import dump, load
 
 
@@ -24,85 +24,89 @@ def train_dev_test_split(data, label, train_frac, dev_frac):
 	    data, label, test_size=dev_test_frac, shuffle=True
 	)
 	X_test, X_dev, y_test, y_dev = train_test_split(
-	    X_dev_test, y_dev_test, test_size=(dev_frac)/dev_test_frac, shuffle=True
+	    X_dev_test, y_dev_test, test_size=dev_frac / dev_test_frac, shuffle=True
 	)
 	return X_train, y_train, X_dev, y_dev, X_test, y_test
 	
 # Parameter Tuning Function
-def param_tuning(clf, gamma_list, c_list, X_train, y_train, X_dev, y_dev, X_test, y_test):
+def param_tuning(clf, hyp_list_1, hyp_list_2, X_train, y_train, X_dev, y_dev, X_test, y_test):
 	#Variable for storing the current max accuracy
-	max_acc = 0;
-
-	# Variables for storing the current best hyper_parameter combination
+	max_acc = -1
 	best_gamma = 0
 	best_c = 0
-	best_model = None
-	for gamma in gamma_list:
-		for C in c_list:				
-			#PART: setting up hyperparameter
-			hyper_params = {'gamma':gamma, 'C':C}
-			clf.set_params(**hyper_params)
-
-			#PART: Train model
-			# Learn the digits on the train subset
-			clf.fit(X_train, y_train)
-
-			#PART: Get dev set predictions
-			# Predict the value of the digit on the test subset
-			predicted_train = clf.predict(X_train)
-			predicted_dev = clf.predict(X_dev)
-			predicted_test = clf.predict(X_test)
-
-			acc_train = metrics.accuracy_score(y_pred=predicted_train, y_true=y_train)
-			acc_dev = metrics.accuracy_score(y_pred=predicted_dev, y_true=y_dev)
-			acc_test = metrics.accuracy_score(y_pred=predicted_test, y_true=y_test)
-
-			print(gamma, "," ,C, "\t", round(acc_train, 3), "\t", round(acc_dev, 3), "\t", round(acc_test, 3))
-
-			if(acc_dev > max_acc):
-				max_acc = acc_dev
-				best_gamma = gamma
-				best_c = C
-				best_model = clf
-	return max_acc, best_gamma, best_c, best_model
+	best_max_depth = 0
+	best_max_leaf_nodes = 0
 	
-def train_save_model(X_train, y_train, X_dev, y_dev, X_test, y_test, gamma_list, c_list, model_path):
+	if type(clf) == svm.SVC:
+		for param_1 in hyp_list_1:
+			for param_2 in hyp_list_2:				
+				#PART: setting up hyperparameter
+				hyper_params = {'gamma':param_1, 'C':param_2}
+				clf.set_params(**hyper_params)
 
-	# 2. Train for every combination of hyperparameter values
-	# 2a. Train the model
-	# 2b. Compute the acuracy on the validation set
-	# 3. Identify the best combination of hyperparameters for which validation set performance is maximum
-	# 4. Report the test set accuracy with this best model
+				#PART: Train model
+				# Learn the digits on the train subset
+				clf.fit(X_train, y_train)
 
-	# Variable for storing the accuracy of the current combination
-	acc = 0
+				#PART: Get dev set predictions
+				# Predict the value of the digit on the test subset
+				predicted_dev = clf.predict(X_dev)
 
-	#Variable for storing the current max accuracy
-	max_acc = 0;
+				acc_dev = metrics.accuracy_score(y_pred=predicted_dev, y_true=y_dev)
 
-	# Variables for storing the current best hyper_parameter combination
-	best_gamma = 0
-	best_c = 0
-	best_model = None
+				#print(gamma, "," ,C, "\t", round(acc_train, 3), "\t", round(acc_dev, 3), "\t", round(acc_test, 3))
 
-	# Variables for the different accuracies
-	predicted_train = 0
-	predicted_dev = 0
-	predicted_test = 0
+				if(acc_dev > max_acc):
+					max_acc = acc_dev
+					best_gamma = param_1
+					best_c = param_2
+		# Now get the predictions on test set with the best parameters
+		hyper_params = {'gamma':param_1, 'C':param_2}
+		clf.set_params(**hyper_params)
 
-	print("\nGamma, C\t", "Train\t", "Dev\t", "Test\t")
+		#PART: Train model
+		# Learn the digits on the train subset
+		clf.fit(X_train, y_train)
 
-	#PART: Define the model
-	# Create a classifier: a support vector classifier
-	clf = svm.SVC()
+		#PART: Get dev set predictions
+		# Predict the value of the digit on the test subset
+		predicted_test = clf.predict(X_test)
 
-	max_acc, best_gamma, best_c, best_model = param_tuning(clf, gamma_list, c_list, X_train, y_train, X_dev, y_dev, X_test, y_test)
+		max_acc = metrics.accuracy_score(y_pred=predicted_test, y_true=y_test)
+		return 	max_acc
+	else:
+		for param_1 in hyp_list_1:
+			for param_2 in hyp_list_2:				
+				#PART: setting up hyperparameter
+				hyper_params = {'max_depth':param_1, 'max_leaf_nodes':param_2}
+				clf.set_params(**hyper_params)
 
-	# Save the best_model
-	best_param_config = "_".join(["Gamma=" + str(best_gamma) + "_C=" + str(best_c)])
-	if model_path is None:
-		model_path = "svm_" + best_param_config + ".joblib" 
-	dump(best_model, model_path)
-	
-	return model_path, best_param_config, best_gamma, best_c
+				#PART: Train model
+				# Learn the digits on the train subset
+				clf.fit(X_train, y_train)
+
+				#PART: Get dev set predictions
+				predicted_dev = clf.predict(X_dev)
+
+				acc_dev = metrics.accuracy_score(y_pred=predicted_dev, y_true=y_dev)
+
+				if(acc_dev > max_acc):
+					max_acc = acc_dev
+					best_max_depth = param_1
+					best_max_leaf_nodes = param_2
+					
+		# Now get the predictions on test set with the best parameters
+		hyper_params = {'max_depth':param_1, 'max_leaf_nodes':param_2}
+		clf.set_params(**hyper_params)
+
+		#PART: Train model
+		# Learn the digits on the train subset
+		clf.fit(X_train, y_train)
+
+		#PART: Get dev set predictions
+		# Predict the value of the digit on the test subset
+		predicted_test = clf.predict(X_test)
+
+		max_acc = metrics.accuracy_score(y_pred=predicted_test, y_true=y_test)
+		return 	max_acc
 	
