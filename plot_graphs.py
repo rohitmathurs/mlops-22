@@ -37,7 +37,7 @@ max_depth_list = [3, 5, 7, 9]
 max_leaf_nodes = [30, 40, 50, 60]
 
 # Set number of iterations (Choosing equal to the test train splits)
-n_cv = 2
+n_cv = 1
 
 # Set the ranges for different ranges
 
@@ -63,9 +63,9 @@ for i in range(n_cv):
 	# Choose a different test train split on every iteration
 	X_train, y_train, X_dev, y_dev, X_test, y_test = train_dev_test_split(data, image_data, train_frac[i], dev_frac, random_seed)
 	if type(clf) ==svm.SVC:
-		max_acc_clf[i] = param_tuning (clf, gamma_list, c_list, X_train, y_train, X_dev, y_dev, X_test, y_test)
+		max_acc_clf[i] = param_tuning (clf, gamma_list, c_list, X_train, y_train, X_dev, y_dev, X_test, y_test, random_seed)
 	else:
-		max_acc_clf[i] = param_tuning (clf, max_depth_list, max_leaf_nodes, X_train, y_train, X_dev, y_dev, X_test, y_test)
+		max_acc_clf[i] = param_tuning (clf, max_depth_list, max_leaf_nodes, X_train, y_train, X_dev, y_dev, X_test, y_test, random_seed)
 
 	# Print the max accuracies found for each model
 	print("\n", i+1, "\t", max_acc_clf[i], "\n")

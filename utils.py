@@ -2,6 +2,7 @@
 from sklearn.model_selection import train_test_split
 from sklearn import datasets, svm, metrics, tree
 from joblib import dump, load
+import os
 
 
 # Dataset preprocessing function
@@ -27,14 +28,14 @@ def train_dev_test_split(data, label, train_frac, dev_frac, random_seed):
 	return X_train, y_train, X_dev, y_dev, X_test, y_test
 	
 # Parameter Tuning Function
-def param_tuning(clf, hyp_list_1, hyp_list_2, X_train, y_train, X_dev, y_dev, X_test, y_test):
+def param_tuning(clf, hyp_list_1, hyp_list_2, X_train, y_train, X_dev, y_dev, X_test, y_test, random_seed):
 	#Variable for storing the current max accuracy
 	max_acc = -1
 	best_gamma = 0
 	best_c = 0
 	best_max_depth = 0
 	best_max_leaf_nodes = 0
-	
+	model_path = None
 	if type(clf) == svm.SVC:
 		for param_1 in hyp_list_1:
 			for param_2 in hyp_list_2:				
@@ -71,6 +72,12 @@ def param_tuning(clf, hyp_list_1, hyp_list_2, X_train, y_train, X_dev, y_dev, X_
 		predicted_test = clf.predict(X_test)
 
 		max_acc = metrics.accuracy_score(y_pred=predicted_test, y_true=y_test)
+		# Save model
+		
+		best_param_config = "_".join(["Gamma=" + str(param_1) + "_C=" + str(param_2)])
+		if model_path is None:
+			model_path = os.path.join('models', "svm_" + best_param_config + ".joblib")
+			dump(clf, model_path)
 		return 	max_acc
 	else:
 		for param_1 in hyp_list_1:
@@ -106,5 +113,12 @@ def param_tuning(clf, hyp_list_1, hyp_list_2, X_train, y_train, X_dev, y_dev, X_
 		predicted_test = clf.predict(X_test)
 
 		max_acc = metrics.accuracy_score(y_pred=predicted_test, y_true=y_test)
+		
+		best_param_config = "_".join(["Best_max_depth=" + str(param_1) + "_Best_max_leaf_nodes=" + str(param_2)])
+		if model_path is None:
+			model_path = os.path.join('models', "tree_" + best_param_config + ".joblib")
+			dump(clf, model_path)
 		return 	max_acc
+		
+
 	
