@@ -1,29 +1,48 @@
 import sys
 import os
 sys.path.append(".")
-from utils import preprocess_digits, train_save_model
+from utils import preprocess_digits, train_dev_test_split
+from sklearn.model_selection import train_test_split
 from sklearn import datasets
-# import pdb
 
-# Some test cases that will validate if models are indeed getting saved or not
-
-# Step 1: Train on a small dataset and provide a path to save trained model
-# Step 2: Assert if the file exists at the provided path
-# Step 3: Assert if the file is indeed a sckit-learn model
-# Step 4: Optionally check the checksum or MD5 of the model file
-
-def test_model_saved():
-	model_path = None
+def test_same_random_seed():
 	digits = datasets.load_digits()
 	data, image_data = preprocess_digits(digits)
 	sample_data = data[:500]
 	sample_image_data = image_data[:500]
-	gamma_list = [0.01, 0.005, 0.001, 0.0005, 0.0001]
-	c_list = [0.1, 0.2, 0.5, 0.7, 1, 2, 5, 7, 10]
-#	pdb.set_trace()
-	actual_model_path, best_gamma, best_c, clf = train_save_model(sample_data, sample_image_data, sample_data, sample_image_data, sample_data, sample_image_data, gamma_list, c_list, model_path)
-	assert actual_model_path == model_path 
+	train_frac = 0.8
+	dev_frac = 0.1
+	dev_test_frac = 1-train_frac
+	seed1 = 20112022
+	seed2 = 20112022
 	
-	assert os.path.exists(model_path)
-	loaded_model = load(model_path)
-	assert type(loaded_model) == type(clf)
+	X_train, y_train, X_dev, y_dev, X_test, y_test = train_dev_test_split(sample_data, sample_image_data, train_frac, dev_frac, seed1)
+	X_train1, y_train1, X_dev1, y_dev1, X_test1, y_test1 = train_dev_test_split(sample_data, sample_image_data, train_frac, dev_frac, seed2)
+	
+	assert X_train.all() == X_train1.all()
+	assert y_train.all() == y_train1.all()
+	assert X_dev.all() == X_dev1.all()
+	assert y_dev.all() == y_dev1.all()
+	assert X_test.all() == X_test1.all()
+	assert y_test.all() == y_test1.all()
+	
+def test_different_random_seed():
+	digits = datasets.load_digits()
+	data, image_data = preprocess_digits(digits)
+	sample_data = data[:500]
+	sample_image_data = image_data[:500]
+	train_frac = 0.8
+	dev_frac = 0.1
+	dev_test_frac = 1-train_frac
+	seed1 = 20112022
+	seed2 = 20
+	
+	X_train, y_train, X_dev, y_dev, X_test, y_test = train_dev_test_split(sample_data, sample_image_data, train_frac, dev_frac, seed1)
+	X_train1, y_train1, X_dev1, y_dev1, X_test1, y_test1 = train_dev_test_split(sample_data, sample_image_data, train_frac, dev_frac, seed2)
+	
+	assert X_train.all() == X_train1.all()
+	assert y_train.all() == y_train1.all()
+	assert X_dev.all() == X_dev1.all()
+	assert y_dev.all() == y_dev1.all()
+	assert X_test.all() == X_test1.all()
+	assert y_test.all() == y_test1.all()
