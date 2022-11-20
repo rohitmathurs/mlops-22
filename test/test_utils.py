@@ -13,8 +13,8 @@ def test_same_random_seed():
 	train_frac = 0.8
 	dev_frac = 0.1
 	dev_test_frac = 1-train_frac
-	seed1 = 20112022
-	seed2 = 20112022
+	seed1 = 42
+	seed2 = 42
 	
 	X_train, y_train, X_dev, y_dev, X_test, y_test = train_dev_test_split(sample_data, sample_image_data, train_frac, dev_frac, seed1)
 	X_train1, y_train1, X_dev1, y_dev1, X_test1, y_test1 = train_dev_test_split(sample_data, sample_image_data, train_frac, dev_frac, seed2)
@@ -34,7 +34,7 @@ def test_different_random_seed():
 	train_frac = 0.8
 	dev_frac = 0.1
 	dev_test_frac = 1-train_frac
-	seed1 = 20112022
+	seed1 = 42
 	seed2 = 20
 	
 	X_train, y_train, X_dev, y_dev, X_test, y_test = train_dev_test_split(sample_data, sample_image_data, train_frac, dev_frac, seed1)

@@ -36,6 +36,9 @@ c_list = [0.1, 0.2, 0.5, 0.7, 1, 2, 5, 7, 10]
 max_depth_list = [3, 5, 7, 9]
 max_leaf_nodes = [30, 40, 50, 60]
 
+max_depth_list = [3, 5, 7, 9]
+max_leaf_nodes = [30, 40, 50, 60]
+
 # Set number of iterations (Choosing equal to the test train splits)
 n_cv = 1
 
